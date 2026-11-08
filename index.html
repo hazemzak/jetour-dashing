@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jetour Dashing Screening</title>
+<meta name="description" content="Jetour Dashing projection show for Walid El Hariry: the films, on the car's own construction.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&family=Geist+Mono&family=Aref+Ruqaa&display=swap">
+<style>
+/* Hz construction, Mode N, Path C (the film frames are rectangles, edge-led).
+   Frame: u = min(2.5rem, 100vw / (2^k + 2)); inner frame 2^k u, one-unit band each side (ui.md section 0).
+   Wide (k = 5): label column 7u + twin gap u + film 24u = 32u. The film is the subject: 2048 x 1080, the projector.
+   Tonic: the car's own (shoulder crease + headlight + top of the wheel circle), y 672.7 of 1080 = 0.6229 of the film height,
+   produced out of the film into the label column; each film title stands on it (two features far apart: the crease, the title). */
+:root {
+  --k: 8; --u: min(2.5rem, calc(100vw / 10));
+  --bg: #0a0c0f; --surface: #11151a; --ink: #e8edf3; --muted: #8b95a3; --hair: #262c35;
+  --ice: #d1f2ff;            /* the show's own line colour (ICE in the build scripts) */
+  --gold: #d9b45a;           /* agreement points, as on the main plate */
+  --plate: rgba(209, 242, 255, .55);
+  --display: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --text: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+  --ruqaa: "Aref Ruqaa", "Traditional Arabic", serif;
+  --tonic: .62288;           /* 672.706 / 1080 */
+  --motion-signal: 140ms; --motion-in: cubic-bezier(.2,0,0,1); --motion-out: cubic-bezier(1,0,.8,1);
+  color-scheme: dark;
+}
+@media (min-width: 651px)  { :root { --k: 16; --u: min(2.5rem, calc(100vw / 18)); } }
+@media (min-width: 1100px) { :root { --k: 32; --u: min(2.5rem, calc(100vw / 34)); } }
+@media (prefers-reduced-motion: reduce) { :root { --motion-signal: 0ms; } }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 calc(var(--u) * .4) / calc(var(--u) * .6) var(--text);
+  padding-left: max(var(--u), env(safe-area-inset-left, 0px)); padding-right: max(var(--u), env(safe-area-inset-right, 0px)); }
+.frame { width: calc(var(--k) * var(--u)); margin: 0 auto; }
+a { color: var(--ice); }
+
+/* ---- top bar: one row, height u, sits u from the top */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: var(--u); height: var(--u); margin-top: var(--u); }
+.eyebrow { font: 400 calc(var(--u) * .28) / 1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.btn { height: var(--u); padding: 0 calc(var(--u) / 4); min-width: calc(var(--u) * 3); border: 1px solid var(--hair); background: transparent; color: var(--ink);
+  font: 400 calc(var(--u) * .3) / 1 var(--mono); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; border-radius: calc(var(--u) * .134); }
+.btn:hover { background: var(--surface); }
+.btn[aria-pressed="true"] { border-color: var(--ice); color: var(--ice); }
+.btn:focus-visible { outline: 2px solid var(--ice); outline-offset: calc(var(--u) / 8); }
+
+/* ---- hero: the main plate (the car's own lines produced to the frame, palette on top, 7 gold agreement points) */
+.hero { margin-top: var(--u); display: grid; gap: calc(var(--u) / 2); }
+.hero img { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid var(--hair); }
+.title { display: grid; gap: calc(var(--u) / 4); margin-top: calc(var(--u) / 2); }
+h1 { font: 600 calc(var(--u) * 2.05) / 1 var(--display); letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+.lede { margin: 0; max-width: calc(var(--u) * 16); color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: calc(var(--u) / 4) var(--u); font: 400 calc(var(--u) * .28) / 1.6 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.facts b { color: var(--ink); font-weight: 400; }
+
+/* ---- a film: label column + the film; in the wide layout the title stands on the car's tonic */
+.film { position: relative; margin-top: calc(var(--u) * 2); display: grid; gap: calc(var(--u) / 2); }
+.label { display: grid; align-content: start; gap: calc(var(--u) / 4); min-width: 0; }
+h2 { font: 600 calc(var(--u) * .85) / 1 var(--display); margin: 0; letter-spacing: -.01em; }
+h2 .bl { display: inline-block; width: 0; height: 0; }
+.spec { font: 400 calc(var(--u) * .28) / 1.6 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.note { margin: 0; max-width: 62ch; }
+.screen { position: relative; width: 100%; aspect-ratio: 2048 / 1080; max-width: 100%; background: #000; border: 1px solid var(--hair); }
+.screen video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pending { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: var(--u); color: var(--muted); font: 400 calc(var(--u) * .3) / 1.6 var(--mono); }
+@media (min-width: 1100px) {
+  .film { grid-template-columns: calc(var(--u) * 7) calc(var(--u) * 24); column-gap: var(--u); }
+}
+
+/* ---- the plate layer: off by default, faded in by the Construction switch (a signal, opacity only) */
+.plate { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity var(--motion-signal) var(--motion-out); }
+.produced { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed var(--plate); pointer-events: none; opacity: 0; transition: opacity var(--motion-signal) var(--motion-out); }
+body.show-plate .plate, body.show-plate .produced { opacity: 1; transition-timing-function: var(--motion-in); }
+.plate text.ar { font-family: var(--ruqaa); }
+
+/* ---- register */
+.register { margin-top: calc(var(--u) * 2); display: grid; gap: calc(var(--u) / 2); }
+h3 { font: 600 calc(var(--u) * .5) / 1.2 var(--display); margin: 0; }
+.tablewrap { overflow-x: auto; border-top: 1px solid var(--hair); }
+table { border-collapse: collapse; width: 100%; font-size: calc(var(--u) * .34); line-height: 1.5; }
+th, td { text-align: left; vertical-align: top; padding: calc(var(--u) / 4) calc(var(--u) / 4) calc(var(--u) / 4) 0; border-bottom: 1px solid var(--hair); }
+th { font: 400 calc(var(--u) * .26) / 1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+td.tag { font-family: var(--mono); color: var(--ice); white-space: nowrap; }
+footer { margin: calc(var(--u) * 2) auto var(--u); color: var(--muted); font: 400 calc(var(--u) * .28) / 1.6 var(--mono); }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="bar">
+    <span class="eyebrow">Walid El Hariry · car show · 2048 × 1080 · 30 fps</span>
+    <button class="btn" id="plateBtn" type="button" aria-pressed="false">Construction</button>
+  </div>
+
+  <section class="hero" aria-label="The main plate">
+    <img src="media/main_plate.jpg" width="2868" height="1080" alt="The main plate of the Jetour Dashing: every straight line of the car produced to the frame, the construction palette laid on top, seven gold agreement points.">
+    <div class="title">
+      <h1>Jetour Dashing</h1>
+      <p class="lede">A projection show on the car itself. Every line in the films is placed by the car's own construction: the real lines of the body produced to the frame, the palette laid on them, and the points where both agree.</p>
+      <div class="facts"><span>tonic <b>y 672.7</b></span><span>u <b>203 mm</b></span><span>frame <b>21 × 8 beats</b></span><span>heart <b>7 lines meet</b></span><span>music <b>136 bpm · 68.7 s</b></span></div>
+    </div>
+  </section>
+
+  <section class="film" aria-labelledby="t1">
+    <div class="label">
+      <span class="eyebrow">v1 · code</span>
+      <h2 id="t1">The light falls for the car<span class="bl"></span></h2>
+      <span class="spec">10 scenes · all code · 2060 frames</span>
+    </div>
+    <div class="screen"><video src="media/v1_code.mp4" poster="media/v1_code_poster.jpg" controls playsinline preload="metadata"></video></div>
+  </section>
+
+  <section class="film" aria-labelledby="t2">
+    <div class="label">
+      <span class="eyebrow">v1 · ComfyUI</span>
+      <h2 id="t2">Same story, generated craft<span class="bl"></span></h2>
+      <span class="spec">815 of 2060 frames from ComfyUI round 2 · scenes 3, 4, 5, 7</span>
+    </div>
+    <div class="screen"><video src="media/v1_comfy.mp4" poster="media/v1_comfy_poster.jpg" controls playsinline preload="metadata"></video></div>
+  </section>
+
+  <section class="film" aria-labelledby="t3">
+    <div class="label">
+      <span class="eyebrow">v2 · construction + 3D</span>
+      <h2 id="t3">Built from the lines<span class="bl"></span></h2>
+      <span class="spec">9 scenes · 6 in 3D · rendering</span>
+    </div>
+    <div class="screen"><div class="pending">v2 is rendering.<br>It lands here when the 3D passes finish.</div></div>
+  </section>
+
+  <section class="register" aria-labelledby="reg">
+    <h3 id="reg">How this page is built</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>element</th><th>derived from</th><th>source</th></tr></thead>
+      <tbody>
+        <tr><td>unit u</td><td>min(2.5 rem, viewport ÷ (2^k + 2)); k = 5 / 4 / 3 by width; one-unit band each side</td><td class="tag">(2)</td></tr>
+        <tr><td>film width</td><td>24u of the 32u frame; height 24u × 1080 / 2048, the projector's own ratio</td><td class="tag">(1)</td></tr>
+        <tr><td>label column</td><td>7u, one twin unit from the film</td><td class="tag">(2)</td></tr>
+        <tr><td>film titles</td><td>baseline on the car's tonic (y 672.7 of 1080), produced out of the film</td><td class="tag">(1+2)</td></tr>
+        <tr><td>section gaps</td><td>2u between films; u between bar, plate and title</td><td class="tag">(2)</td></tr>
+        <tr><td>plate layer</td><td>car frame, tonic, O, both wheel circles (2u from the hubs), the 7 agreement points</td><td class="tag">(1+2)</td></tr>
+        <tr><td>button</td><td>h = u, corner on the √3 rung (tight), one corner for the page</td><td class="tag">(2)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note spec">(1) a line the car gives · (2) a line laid on it · (1+2) where both meet. The Construction switch draws the plate over every film; the dashed line is the car's tonic, produced to the page edge.</p>
+  </section>
+  <footer>Jetour Dashing · Walid El Hariry shows · Hazem Zakaria · 2026</footer>
+</div>
+
+<template id="plateTpl">
+<svg class="plate" viewBox="0 0 2048 1080" preserveAspectRatio="none" aria-hidden="true">
+  <g fill="none" stroke="rgba(209,242,255,.55)" stroke-width="1.6" vector-effect="non-scaling-stroke">
+    <rect x="73" y="288" width="1959" height="746"/>
+    <line x1="73" y1="288" x2="2032" y2="1034"/><line x1="2032" y1="288" x2="73" y2="1034"/>
+    <rect x="73" y="288" width="746" height="746" stroke-dasharray="6 6"/><rect x="1286" y="288" width="746" height="746" stroke-dasharray="6 6"/>
+    <circle cx="441.9" cy="859.4" r="179.85"/><circle cx="1647.5" cy="859.2" r="179.85"/>
+    <line x1="0" y1="672.7" x2="2048" y2="672.7" stroke="rgba(209,242,255,.9)"/>
+    <line x1="1052.5" y1="288" x2="1052.5" y2="1034" stroke-dasharray="2 6"/>
+  </g>
+  <g fill="none" stroke="#d9b45a" stroke-width="2" vector-effect="non-scaling-stroke">
+    <circle cx="618.5" cy="847.1" r="10"/><circle cx="2030.9" cy="870.3" r="10"/><circle cx="1465.1" cy="842.2" r="12"/>
+    <circle cx="1834.7" cy="677.6" r="22"/><circle cx="1734.1" cy="669.3" r="12"/><circle cx="1435.5" cy="671.6" r="14"/><circle cx="297" cy="668.3" r="12"/>
+  </g>
+  <circle cx="1052.5" cy="672.7" r="5" fill="rgba(209,242,255,.9)"/>
+  <g fill="rgba(209,242,255,.85)" font-size="30">
+    <text class="ar" x="1010" y="655" direction="rtl" text-anchor="start" style="unicode-bidi:plaintext">الـ tonic: كتف العربية والفانوس وراس دايرة العجلة على خط واحد</text>
+    <text class="ar" x="1834" y="735" text-anchor="middle" fill="#d9b45a" style="unicode-bidi:plaintext">الـ heart: سبع خطوط بيتقابلوا هنا</text>
+    <text class="ar" x="1052" y="320" text-anchor="middle" style="unicode-bidi:plaintext">O</text>
+  </g>
+</svg>
+</template>
+
+<script>
+(() => {
+  const TONIC = 672.706 / 1080;
+  const tpl = document.getElementById("plateTpl");
+  const films = [...document.querySelectorAll(".film")];
+  films.forEach(f => {
+    f.querySelector(".screen").appendChild(tpl.content.firstElementChild.cloneNode(true));
+    const p = document.createElement("div"); p.className = "produced"; f.appendChild(p);
+  });
+  // The title baseline stands on the tonic (wide layout only); the produced tonic runs across the whole section.
+  function place() {
+    const wide = matchMedia("(min-width: 1100px)").matches;
+    films.forEach(f => {
+      const scr = f.querySelector(".screen"), lab = f.querySelector(".label"), bl = f.querySelector("h2 .bl"), line = f.querySelector(".produced");
+      lab.style.paddingTop = "0px";
+      const fr = f.getBoundingClientRect(), sr = scr.getBoundingClientRect();
+      const tonicY = sr.top + 1 + (sr.height - 2) * TONIC;          // inside the 1px border
+      line.style.top = (tonicY - fr.top) + "px";
+      if (wide) lab.style.paddingTop = Math.max(0, tonicY - bl.getBoundingClientRect().bottom) + "px";
+    });
+  }
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(place);
+  addEventListener("resize", place);
+  // Construction switch: committed at once, only its appearance fades (ui.md 8.4).
+  const btn = document.getElementById("plateBtn");
+  btn.addEventListener("click", () => {
+    const on = btn.getAttribute("aria-pressed") !== "true";
+    btn.setAttribute("aria-pressed", String(on)); document.body.classList.toggle("show-plate", on);
+  });
+})();
+</script>
+</body>
+</html>
